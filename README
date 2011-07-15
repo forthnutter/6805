@@ -1,0 +1,12 @@
+I like to make an emulator for a Computronics LTD. Sports controller.
+
+It uses:
+1. Motorla/Freescale MC68HC705C9A
+2. A 20 Charcter 2 Line LCD
+3. A keypad
+4. RS485 Output
+5. 7 Extra Opto Isolated Inputs
+6. 2 Outputs
+7. 1 Special High Voltage Input
+
+
