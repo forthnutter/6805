@@ -1,4 +1,9 @@
-I like to make an emulator for a Computronics LTD. Sports controller.
+
+6805 Emulator
+
+This project started with need and want.
+
+The need was a 6895 Emulator for a Computronics LTD. Sports controller.
 
 It uses:
 1. Motorla/Freescale MC68HC705C9A
@@ -9,4 +14,9 @@ It uses:
 6. 2 Outputs
 7. 1 Special High Voltage Input
 
+
+The want was to learn to write programs in Factor. http://factorcode.org
+
+
+To start with I am using some ideas from the 8080 emulator in the exsiting factor library
 
