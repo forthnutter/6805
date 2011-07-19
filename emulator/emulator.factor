@@ -3,17 +3,15 @@
 !
 USING: 
     accessors arrays kernel math sequences byte-arrays io
-    math.parser unicode.case ;
+    math.parser unicode.case namespaces parser lexer
+    tools.continuations ;
 !    assocs
 !    combinators
 !    fry
 !    io.encodings.binary
 !    io.files
 !    io.pathnames
-!    lexer
 !    make
-!    namespaces
-!    parser
 !    peg
 !    peg.ebnf
 !    peg.parsers
@@ -85,7 +83,21 @@ CONSTANT: b7-flag        HEX: 80
 : write-word ( value addr cpu -- )
   [ >word< ] 2dip [ write-byte ] 2keep [ 1 + ] dip write-byte ;
 
+: not-implemented ( <cpu> -- )
+  drop
+;
+
  
+#! Return a 256 element vector containing the emulation words for
+#! each opcode in the 6805 instruction set.
+: instructions ( -- vector )
+  \ instructions get-global
+  [
+    256 [ not-implemented ] <array> \ instructions set-global
+  ] unless
+  \ instructions get-global
+;
+
 
 #! do a cpu Reset
 M: cpu reset ( cpu -- )
@@ -102,8 +114,26 @@ M: cpu reset ( cpu -- )
    drop
 ;
 
+#! Return the next instruction from the CPU's program
+#! counter, but don't increment the counter.
+: peek-instruction ( cpu -- word )
+  [ pc>> ] keep read-byte instructions nth first ;
+  
+
 #! Dump the CPU contents
 : cpu. ( cpu -- )
+  [ " PC: " write pc>> >hex 4 CHAR: 0 pad-head >upper write ] keep
+  [ " SP: " write sp>> >hex 2 CHAR: 0 pad-head >upper write ] keep
+  [ " A: " write a>> >hex 2 CHAR: 0 pad-head >upper write ] keep
+  [ " X: " write x>> >hex 2 CHAR: 0 pad-head >upper write ] keep
+  [ " CCR: " write ccr>> >bin 8 CHAR: 0 pad-head write ] keep
+  [ " Cycles: " write cycles>> number>string 5 CHAR: \s pad-head write ] keep
+  [ " " write peek-instruction name>> write " " write ] keep
+  nl drop
+;
+
+#! Dump the CPU contents
+: cpu*. ( cpu -- )
   [ " PC: " write pc>> >hex 4 CHAR: 0 pad-head >upper write ] keep
   [ " SP: " write sp>> >hex 2 CHAR: 0 pad-head >upper write ] keep
   [ " A: " write a>> >hex 2 CHAR: 0 pad-head >upper write ] keep
@@ -113,7 +143,7 @@ M: cpu reset ( cpu -- )
   nl drop
 ;
 
-
-
 #! Make a CPU here
 : <cpu> ( -- cpu ) cpu new dup reset ;
+
+SYNTAX: INSTRUCTION: break ";" parse-tokens drop ;
