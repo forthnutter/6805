@@ -5,3 +5,4 @@ USING: 6805.emulator tools.time ;
 IN: 6805
 
 
+INSTRUCTION: ;
