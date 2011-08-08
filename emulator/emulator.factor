@@ -4,20 +4,14 @@
 USING: 
     accessors arrays kernel math sequences byte-arrays io
     math.parser unicode.case namespaces parser lexer
-    tools.continuations ;
-!    assocs
-!    combinators
-!    fry
+    tools.continuations peg fry assocs combinators sequences.deep make
+    words quotations ;
+  
 !    io.encodings.binary
 !    io.files
 !    io.pathnames
-!    make
-!    peg
 !    peg.ebnf
 !    peg.parsers
-!    quotations
-!    sequences.deep
-!    words
 ! ;
 IN: 6805.emulator
 
@@ -99,6 +93,9 @@ CONSTANT: b7-flag        HEX: 80
 ;
 
 
+: set-instruction ( quot n -- )
+  instructions set-nth ;
+
 #! do a cpu Reset
 M: cpu reset ( cpu -- )
    0             >>a            ! reset reg A
@@ -143,7 +140,119 @@ M: cpu reset ( cpu -- )
   nl drop
 ;
 
+#! Return a 256 element vector containing the cycles for
+#! each opcode in the 8080 instruction set.
+: instruction-cycles ( -- vector )
+  \ instruction-cycles get-global
+  [
+    256 f <array> \ instruction-cycles set-global
+  ] unless
+  \ instruction-cycles get-global ;
+
+
+
+SYMBOLS: $1 $2 $3 $4 ;
+
+: replace-patterns ( vector tree -- tree )
+  [
+    {
+      { $1 [ first ] }
+      { $2 [ second ] }
+      { $3 [ third ] }
+      { $4 [ fourth ] }
+      [ nip ]
+    } case
+  ] with deep-map
+;
+
+: patterns ( -- hashtable )
+  #! table of code quotation patterns for each type of instruction.
+  H{
+    { "NOP" [ drop ] }
+
+   }
+;
+
+
+#! Generate the quotation for an instruction, given the instruction in 
+#! the 'string' and a vector containing the arguments for that instruction.
+: generate-instruction ( vector string -- quot )
+  patterns at replace-patterns ;
+
+#! Return a parser for then instruction identified by the token. 
+#! The parser return parses the token only and expects no additional
+#! arguments to the instruction.
+: simple-instruction ( token -- parser )
+  token [ '[ { } _ generate-instruction ] ] action ;
+
+#! Return a parser for an instruction identified by the token. 
+#! The instruction is expected to take additional arguments by 
+#! being combined with other parsers. Then 'type' is used for a lookup
+#! in a pattern hashtable to return the instruction quotation pattern.
+: complex-instruction ( type token -- parser )
+  token swap [ nip '[ _ generate-instruction ] ] curry action ;
+
+: no-params ( ast -- ast )
+  first { } swap curry ;
+
+: one-param ( ast -- ast )
+  first2 swap curry ;
+
+: two-params ( ast -- ast )
+  first3 append swap curry ;
+
+: NOP-instruction ( -- parser )
+  "NOP" simple-instruction ;
+
+: BRSET0-instruction ( -- parser )
+  [
+    "BRSET0" "BRSET" complex-instruction ,
+    "0" token sp hide ,
+  ] seq* [ two-params ] action ;
+
+
+: 6805-generator-parser ( -- parser )
+  [ 
+    BRSET0-instruction  ,
+
+  ] choice* [ call( -- quot ) ] action ;
+
+
+
+#! Given an instruction string, return the emulation quotation for
+#! it. This will later be expanded to produce the disassembly and
+#! assembly quotations.
+: instruction-quotations ( string -- emulate-quot )
+  6805-generator-parser parse
+;
+
+SYMBOL: last-instruction
+SYMBOL: last-opcode
+
+
+#! Process the list of strings, which should make
+#! up an 6805 Instruction, and output a quotation
+#! that would implement that instruction
+: parse-instructions ( list -- )
+  dup " " join instruction-quotations
+  [
+    "_" join [ "emulate-" % % ] "" make
+    create-in dup last-instruction global set-at 
+  ] dip (( cpu -- )) define-declared
+;
+
+
 #! Make a CPU here
 : <cpu> ( -- cpu ) cpu new dup reset ;
 
-SYNTAX: INSTRUCTION: break ";" parse-tokens drop ;
+SYNTAX: INSTRUCTION: break ";" parse-tokens parse-instructions ;
+
+
+#! Set the number of cycles for the last instruction that was defined. 
+SYNTAX: cycles 
+  scan string>number last-opcode global at instruction-cycles set-nth ; 
+
+#! Set the opcode number for the last instruction that was defined.
+SYNTAX: opcode ( -- )
+  last-instruction global at 1quotation scan 16 base>
+  dup last-opcode global set-at set-instruction ; 
