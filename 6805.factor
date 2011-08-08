@@ -5,4 +5,4 @@ USING: 6805.emulator tools.time ;
 IN: 6805
 
 
-INSTRUCTION: ;
+INSTRUCTION: BRSET0     ; opcode 00 cycles 05
