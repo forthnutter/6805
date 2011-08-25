@@ -149,7 +149,14 @@ M: cpu reset ( cpu -- )
   ] unless
   \ instruction-cycles get-global ;
 
-
+#! BRSET
+#! d relative displacement
+#! m zero Page memory location
+#! n bit number
+: (emulate-BRSET) ( n cpu -- )
+  [ pc>> ] keep
+  
+  ;
 
 SYMBOLS: $1 $2 $3 $4 ;
 
@@ -165,11 +172,10 @@ SYMBOLS: $1 $2 $3 $4 ;
   ] with deep-map
 ;
 
+#! table of code quotation patterns for each type of instruction.
 : patterns ( -- hashtable )
-  #! table of code quotation patterns for each type of instruction.
   H{
-    { "NOP" [ drop ] }
-
+    { "BRSET0" [ 0 swap (emulate-BRSET) ] }
    }
 ;
 
@@ -208,7 +214,7 @@ SYMBOLS: $1 $2 $3 $4 ;
   [
     "BRSET0" "BRSET" complex-instruction ,
     "0" token sp hide ,
-  ] seq* [ two-params ] action ;
+  ] seq* [ no-params ] action ;
 
 
 : 6805-generator-parser ( -- parser )
@@ -250,9 +256,9 @@ SYNTAX: INSTRUCTION: break ";" parse-tokens parse-instructions ;
 
 #! Set the number of cycles for the last instruction that was defined. 
 SYNTAX: cycles 
-  scan string>number last-opcode global at instruction-cycles set-nth ; 
+ break scan string>number last-opcode global at instruction-cycles set-nth ; 
 
 #! Set the opcode number for the last instruction that was defined.
 SYNTAX: opcode ( -- )
-  last-instruction global at 1quotation scan 16 base>
+ break last-instruction global at 1quotation scan 16 base>
   dup last-opcode global set-at set-instruction ; 
