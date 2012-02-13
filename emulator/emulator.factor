@@ -15,6 +15,7 @@ USING:
 ! ;
 IN: 6805.emulator
 
+TUPLE: memory start size read write ;
 TUPLE: cpu a x ccr pc sp halted? last-interrupt cycles ram ;
 
 GENERIC: reset ( cpu -- )
@@ -76,6 +77,14 @@ CONSTANT: b7-flag        HEX: 80
 
 : write-word ( value addr cpu -- )
   [ >word< ] 2dip [ write-byte ] 2keep [ 1 + ] dip write-byte ;
+
+: inc-pc ( cpu -- )
+  [ pc>> ] keep
+  swap
+  1 + >>pc
+  drop
+ ;
+
 
 : not-implemented ( <cpu> -- )
   drop
@@ -141,7 +150,7 @@ M: cpu reset ( cpu -- )
 ;
 
 #! Return a 256 element vector containing the cycles for
-#! each opcode in the 8080 instruction set.
+#! each opcode in the 6805 instruction set.
 : instruction-cycles ( -- vector )
   \ instruction-cycles get-global
   [
@@ -154,8 +163,10 @@ M: cpu reset ( cpu -- )
 #! m zero Page memory location
 #! n bit number
 : (emulate-BRSET) ( n cpu -- )
-  [ pc>> ] keep
-  
+    [ inc-pc ] keep [ pc>> ] keep  ! n pc cpu
+    [ read-byte ] keep
+    [ inc-pc ] keep [ pc>> ] keep
+    [ read-byte ] keep
   ;
 
 SYMBOLS: $1 $2 $3 $4 ;
@@ -183,7 +194,7 @@ SYMBOLS: $1 $2 $3 $4 ;
 #! Generate the quotation for an instruction, given the instruction in 
 #! the 'string' and a vector containing the arguments for that instruction.
 : generate-instruction ( vector string -- quot )
-  patterns at replace-patterns ;
+  break patterns at replace-patterns ;
 
 #! Return a parser for then instruction identified by the token. 
 #! The parser return parses the token only and expects no additional
