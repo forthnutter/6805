@@ -15,10 +15,43 @@ USING:
 ! ;
 IN: 6805.emulator
 
-TUPLE: memory start size read write ;
+
+CONSTANT: MEMSTART 0
+CONSTANT: MEMSIZE  HEX: FFFF
+
+TUPLE: memory start size array ;
+
+GENERIC: init ( start size memory -- )
+
+#! Make Memory
+: <memory> ( -- memory ) memory new [ MEMSTART MEMSIZE ] keep init ;
+
+M: memory init ( start size memory -- )
+  swap >>size swap >>start
+  [ size>> <byte-array> ] keep  array<<
+;
+
+
+
 TUPLE: cpu a x ccr pc sp halted? last-interrupt cycles ram ;
 
 GENERIC: reset ( cpu -- )
+
+#! Make a CPU here
+: <cpu> ( -- cpu ) cpu new <memory> >>ram dup reset ;
+
+#! do a cpu Reset
+M: cpu reset ( cpu -- )
+   0             >>a            ! reset reg A
+   0             >>x            ! reset reg X
+   BIN: 11100000 >>ccr          ! reset CCR
+   HEX: FFFE     >>pc           ! reset PC this needs a relook
+   HEX: 00FF     >>sp           ! reset SP
+   f >>halted?
+   0 >>cycles
+   drop
+;
+
 
 CONSTANT: carry-flag     HEX: 01
 CONSTANT: zero-flag      HEX: 02
@@ -105,20 +138,6 @@ CONSTANT: b7-flag        HEX: 80
 : set-instruction ( quot n -- )
   instructions set-nth ;
 
-#! do a cpu Reset
-M: cpu reset ( cpu -- )
-   0             >>a            ! reset reg A
-   0             >>x            ! reset reg X
-   BIN: 11100000 >>ccr          ! reset CCR
-   HEX: FFFE     >>pc           ! reset PC this needs a relook
-   HEX: 00FF     >>sp           ! reset SP
-   HEX: FFFF <byte-array> >>ram !
- 
-!   HEX: FFFF 0 <array> >>ram ! create memory
-   f >>halted?
-   0 >>cycles
-   drop
-;
 
 #! Return the next instruction from the CPU's program
 #! counter, but don't increment the counter.
@@ -259,8 +278,8 @@ SYMBOL: last-opcode
 ;
 
 
-#! Make a CPU here
-: <cpu> ( -- cpu ) cpu new dup reset ;
+
+
 
 SYNTAX: INSTRUCTION: break ";" parse-tokens parse-instructions ;
 
