@@ -5,7 +5,7 @@ USING:
     accessors arrays kernel math sequences byte-arrays io
     math.parser unicode.case namespaces parser lexer
     tools.continuations peg fry assocs combinators sequences.deep make
-    words quotations ;
+    words quotations deques dlists ;
   
 !    io.encodings.binary
 !    io.files
@@ -33,12 +33,13 @@ M: memory init ( start size memory -- )
 
 
 
-TUPLE: cpu a x ccr pc sp halted? last-interrupt cycles ram ;
+TUPLE: cpu a x ccr pc sp halted? last-interrupt cycles mlist ;
 
 GENERIC: reset ( cpu -- )
+GENERIC: addmemory ( obj cpu -- )
 
 #! Make a CPU here
-: <cpu> ( -- cpu ) cpu new <memory> >>ram dup reset ;
+: <cpu> ( -- cpu ) cpu new <dlist> >>mlist dup reset ;
 
 #! do a cpu Reset
 M: cpu reset ( cpu -- )
@@ -50,6 +51,11 @@ M: cpu reset ( cpu -- )
    f >>halted?
    0 >>cycles
    drop
+;
+
+#! add memory object to the cpu memory list
+M: cpu addmemory ( obj cpu -- )
+  mlist>> push-back* drop
 ;
 
 
