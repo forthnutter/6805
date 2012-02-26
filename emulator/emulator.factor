@@ -22,6 +22,8 @@ CONSTANT: MEMSIZE  HEX: FFFF
 TUPLE: memory start size array ;
 
 GENERIC: init ( start size memory -- )
+GENERIC: read-byte ( address memory -- byte )
+
 
 #! Make Memory
 : <memory> ( -- memory ) memory new [ MEMSTART MEMSIZE ] keep init ;
@@ -32,11 +34,18 @@ M: memory init ( start size memory -- )
 ;
 
 
+M: memory read-byte ( address  memory -- byte )
+  [ >>size ] keep
+;
+  
+
 
 TUPLE: cpu a x ccr pc sp halted? last-interrupt cycles mlist ;
 
 GENERIC: reset ( cpu -- )
 GENERIC: addmemory ( obj cpu -- )
+GENERIC: byte-read ( address cpu -- byte )
+
 
 #! Make a CPU here
 : <cpu> ( -- cpu ) cpu new <dlist> >>mlist dup reset ;
@@ -57,6 +66,25 @@ M: cpu reset ( cpu -- )
 M: cpu addmemory ( obj cpu -- )
   mlist>> push-back* drop
 ;
+
+SYMBOL: tlist
+
+: match-memory ( 0 memory -- ? )
+  [ start>> >= ] keep [ size>> ] keep start>> -
+;
+
+
+: find-memory ( 0 list -- memory )
+  <dlist> tlist set pop-front match-memory
+;
+
+M: cpu byte-read ( addr cpu -- byte )
+  #! Read one byte from memory
+  [ mlist>> deque-empty? ] keep swap [ drop drop f ] [ mlist>> find-memory ] if 
+  #! over HEX: FFFF <= [ ram>> nth ] [ 2drop HEX: FF ] if
+;
+
+
 
 
 CONSTANT: carry-flag     HEX: 01
@@ -101,18 +129,18 @@ CONSTANT: b7-flag        HEX: 80
   if
   >>ccr drop ;
 
-: read-byte ( addr cpu -- byte )
-  #! Read one byte from memory
-  over HEX: FFFF <= [ ram>> nth ] [ 2drop HEX: FF ] if ;
+
 
 : write-byte ( value addr cpu -- )
   #! Write a byte to the specified memory address.
-  over dup 0 < swap HEX: FFFF > or
-  [ 3drop ]
-  [ ram>> set-nth ] if ;
+#!  over dup 0 < swap HEX: FFFF > or
+ #! [ 3drop ]
+ #! [ ram>> set-nth ] if
+;
 
 : read-word ( addr cpu -- word )
-  [ read-byte ] 2keep [ 1 + ] dip read-byte swap 8 shift bitor ;
+  #! [ read-byte ] 2keep [ 1 + ] dip read-byte swap 8 shift bitor
+;
 
 : write-word ( value addr cpu -- )
   [ >word< ] 2dip [ write-byte ] 2keep [ 1 + ] dip write-byte ;
