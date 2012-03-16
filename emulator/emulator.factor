@@ -34,8 +34,8 @@ M: memory init ( start size memory -- )
 ;
 
 
-M: memory read-byte ( address  memory -- byte )
-  [ >>size ] keep
+M: memory read-byte ( address memory -- byte )
+  [ start>> + ] keep [ array>> ] call nth
 ;
   
 
@@ -69,19 +69,28 @@ M: cpu addmemory ( obj cpu -- )
 
 SYMBOL: tlist
 
-: match-memory ( 0 memory -- ? )
-  [ start>> >= ] keep [ size>> ] keep start>> -
-;
 
-
-: find-memory ( 0 list -- memory )
-  <dlist> tlist set pop-front match-memory
+: find-memory ( address list -- m t f )
+  [
+    [
+      [ drop dup ] keep    ! make a copy of address
+      start>> >=
+    ] keep
+    [ drop swap ] keep
+    [
+      [ drop dup ] keep    ! make a copy of address      
+      dup size>> swap  start>> - <=
+    ] call
+    and
+  ] dlist-find
 ;
 
 M: cpu byte-read ( addr cpu -- byte )
   #! Read one byte from memory
-  [ mlist>> deque-empty? ] keep swap [ drop drop f ] [ mlist>> find-memory ] if 
-  #! over HEX: FFFF <= [ ram>> nth ] [ 2drop HEX: FF ] if
+  #! [ drop dup ] keep
+  [ mlist>> deque-empty? ] keep swap
+  [ drop drop f ] [ mlist>> find-memory ] if
+  [ read-byte ] [ drop 0 ] if  
 ;
 
 
