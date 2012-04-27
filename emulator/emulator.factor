@@ -281,7 +281,7 @@ SYMBOLS: $1 $2 $3 $4 ;
 #! table of code quotation patterns for each type of instruction.
 : patterns ( -- hashtable )
   H{
-    { "BRSET0" [ 0 swap (emulate-BRSET) ] }
+    { "OPC-00" [ 0 swap (emulate-BRSET) ] }
    }
 ;
 
@@ -350,10 +350,8 @@ SYMBOL: last-opcode
   [
     "_" join [ "emulate-" % % ] "" make
     create-in dup last-instruction global set-at 
-  ] dip (( cpu -- )) define-declared
+  ] dip ( cpu -- ) define-declared
 ;
-
-
 
 
 
@@ -362,9 +360,20 @@ SYNTAX: INSTRUCTION: break ";" parse-tokens parse-instructions ;
 
 #! Set the number of cycles for the last instruction that was defined. 
 SYNTAX: cycles 
- break scan string>number last-opcode global at instruction-cycles set-nth ; 
+  scan-token string>number last-opcode get-global instruction-cycles set-nth ; 
 
 #! Set the opcode number for the last instruction that was defined.
 SYNTAX: opcode ( -- )
- break last-instruction global at 1quotation scan 16 base>
-  dup last-opcode global set-at set-instruction ; 
+  last-instruction get-global 1quotation scan-token hex>
+  dup last-opcode set-global set-instruction ;
+
+
+: step ( cpu -- )
+  dup pc>>              ! PC
+  swap memory>>         ! memory
+  
+;
+
+#! Description: Trace execute one instruction
+: trace ( cpu -- )
+;
