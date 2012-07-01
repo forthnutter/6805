@@ -2,9 +2,13 @@
 ! See http://factorcode.org/license.txt for BSD license.
 !
 USING: 
-    accessors arrays kernel math sequences byte-arrays io
+    accessors arrays
+    kernel
+    locals
+    math sequences byte-arrays io
     math.parser unicode.case namespaces parser lexer
     tools.continuations peg fry assocs combinators sequences.deep make
+    vectors
     words quotations deques dlists ;
   
 !    io.encodings.binary
@@ -73,7 +77,7 @@ M: memory read-byte ( address memory -- byte )
   
 
 
-TUPLE: cpu a x ccr pc sp halted? last-interrupt cycles mlist ;
+TUPLE: cpu a x ccr pc sp halted? last-interrupt cycles mlist memory ;
 
 GENERIC: reset ( cpu -- )
 GENERIC: addmemory ( obj cpu -- )
@@ -118,10 +122,20 @@ SYMBOL: tlist
   ] dlist-find
 ;
 
-M: cpu byte-read ( addr cpu -- byte )
+M:: cpu byte-read ( addr cpu -- byte )
   #! Read one byte from memory
   #! [ drop dup ] keep
-  [ mlist>> deque-empty? ] keep swap
+  cpu mlist>> vector?
+  [
+    cpu mlist>>
+    [
+      
+    ] each
+  ]
+  [
+    f
+  ] if
+  
   [ drop drop f ] [ mlist>> find-memory ] if
   [ read-byte ] [ drop 0 ] if  
 ;
@@ -257,7 +271,18 @@ CONSTANT: b7-flag        HEX: 80
 #! d relative displacement
 #! m zero Page memory location
 #! n bit number
-: (emulate-BRSET) ( n cpu -- )
+: (emulate-brset) ( n cpu -- )
+    [ inc-pc ] keep [ pc>> ] keep  ! n pc cpu
+    [ read-byte ] keep
+    [ inc-pc ] keep [ pc>> ] keep
+    [ read-byte ] keep
+  ;
+
+#! BRCLR
+#! d relative displacement
+#! m zero Page memory location
+#! n bit number
+: (emulate-brclr) ( n cpu -- )
     [ inc-pc ] keep [ pc>> ] keep  ! n pc cpu
     [ read-byte ] keep
     [ inc-pc ] keep [ pc>> ] keep
@@ -281,7 +306,22 @@ SYMBOLS: $1 $2 $3 $4 ;
 #! table of code quotation patterns for each type of instruction.
 : patterns ( -- hashtable )
   H{
-    { "OPC-00" [ 0 swap (emulate-BRSET) ] }
+    { "OPC-00" [ 0 swap (emulate-brset) ] }
+    { "OPC-01" [ 0 swap (emulate-brclr) ] }
+    { "OPC-02" [ 1 swap (emulate-brset) ] }
+    { "OPC-03" [ 1 swap (emulate-brclr) ] }
+    { "OPC-04" [ 2 swap (emulate-brset) ] }
+    { "OPC-05" [ 2 swap (emulate-brclr) ] }
+    { "OPC-06" [ 3 swap (emulate-brset) ] }
+    { "OPC-07" [ 3 swap (emulate-brclr) ] }
+    { "OPC-08" [ 4 swap (emulate-brset) ] }
+    { "OPC-09" [ 4 swap (emulate-brclr) ] }
+    { "OPC-0A" [ 5 swap (emulate-brset) ] }
+    { "OPC-0B" [ 5 swap (emulate-brclr) ] }
+    { "OPC-0C" [ 6 swap (emulate-brset) ] }
+    { "OPC-0D" [ 6 swap (emulate-brclr) ] }
+    { "OPC-0E" [ 7 swap (emulate-brset) ] }
+    { "OPC-0F" [ 7 swap (emulate-brclr) ] }
    }
 ;
 
@@ -318,7 +358,7 @@ SYMBOLS: $1 $2 $3 $4 ;
 
 : BRSET0-instruction ( -- parser )
   [
-    "BRSET0" "BRSET" complex-instruction ,
+    "OPC-00" "BRSET" complex-instruction ,
     "0" token sp hide ,
   ] seq* [ no-params ] action ;
 
