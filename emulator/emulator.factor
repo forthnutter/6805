@@ -20,43 +20,14 @@ USING:
 IN: 6805.emulator
 
 
-! PORTA  $0000 Port A
-! PORTB  $0001 Port B
-! PORTC  $0002 Port C
-! PORTD  $0003 Port D
-! DDRA   $0004 Data Direction Register A
-! DDRB   $0005 Data Direction Register B
-! DDRC   $0006 Data Direction Register C
-! DDRD   $0007 Data Direction Register D
-!        $0008
-!        $0009
-! SPCR   $000A SPI Control Register
-! SPSR   $000B SPI Status Register
-! SPDR   $000C SPI Data Register
-! BAUD   $000D SCI Baud Rate Register
-! SCCR1  $000E SCI Control Register 1
-! SCCR2  $000F SCI Control Register 2
-! SCSR   $0010 SCI Status Register
-! SCDR   $0011 SCI Data Register
-! TCR    $0012 Timer Control Register
-! TSR    $0013 Timer Status Register
-! ICRH   $0014 Input Capture Register High
-! ICRL   $0015 Input Capture Register Low
-! OCRH   $0016 Output Compare Register High
-! OCRL   $0017 Output Compare Register Low
-! TRH    $0018 Timer Register High
-! TRL    $0019 Timer Register Low
-! ATRH   $001A Alternate Timer Register High
-! ATRL   $001B Alternate Timer Register Low
-! EPR    $001C EPROM Porgramming
-! COPRST $001D COP Reset Register
-! COPCR  $001E COP Control Register
 
 
 CONSTANT: MEMSTART 0
-CONSTANT: MEMSIZE  HEX: FFFF
+CONSTANT: MEMSIZE 0xFFFF
 
 TUPLE: memory start size array ;
+
+
 
 GENERIC: init ( start size memory -- )
 GENERIC: read-byte ( address memory -- byte )
@@ -76,7 +47,6 @@ M: memory read-byte ( address memory -- byte )
 ;
   
 
-
 TUPLE: cpu a x ccr pc sp halted? last-interrupt cycles mlist memory ;
 
 GENERIC: reset ( cpu -- )
@@ -89,11 +59,11 @@ GENERIC: byte-read ( address cpu -- byte )
 
 #! do a cpu Reset
 M: cpu reset ( cpu -- )
-   0             >>a            ! reset reg A
-   0             >>x            ! reset reg X
-   BIN: 11100000 >>ccr          ! reset CCR
-   HEX: FFFE     >>pc           ! reset PC this needs a relook
-   HEX: 00FF     >>sp           ! reset SP
+   0               >>a          ! reset reg A
+   0               >>x          ! reset reg X
+   "11100000" bin> >>ccr        ! reset CCR
+   "FFFE" hex>     >>pc         ! reset PC this needs a relook
+   "00FF" hex>     >>sp         ! reset SP
    f >>halted?
    0 >>cycles
    drop
@@ -143,19 +113,19 @@ M:: cpu byte-read ( addr cpu -- byte )
 
 
 
-CONSTANT: carry-flag     HEX: 01
-CONSTANT: zero-flag      HEX: 02
-CONSTANT: neg-flag       HEX: 04
-CONSTANT: int-flag       HEX: 08
-CONSTANT: half-flag      HEX: 10
-CONSTANT: b5-flag        HEX: 20
-CONSTANT: b6-flag        HEX: 40
-CONSTANT: b7-flag        HEX: 80
+CONSTANT: carry-flag     1
+CONSTANT: zero-flag      2
+CONSTANT: neg-flag       4
+CONSTANT: int-flag       8
+CONSTANT: half-flag      16
+CONSTANT: b5-flag        32
+CONSTANT: b6-flag        64
+CONSTANT: b7-flag        128
 
 : >word< ( word -- byte byte )
   #! Explode a word into its two 8 bits values.
   #! dup HEX: FF bitand swap -8 shift HEX: FF bitand swap ;
-  dup HEX: FF bitand swap -8 shift HEX: FF bitand ;
+  dup "FF" hex> bitand swap -8 shift "FF" hex> bitand ;
 
 : flag_h? ( cpu -- bool )
   #! Test the half-carry flag status
