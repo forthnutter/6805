@@ -4,7 +4,7 @@
 USING: kernel 6805.emulator.ddr models accessors math ;
 
 
-IN: 6805.emulator.port
+IN: 6805.emulator.ports
 
 ! The port has two 8 bit registers
 ! LATCH   Set the state of output pin
@@ -12,11 +12,12 @@ IN: 6805.emulator.port
 !         corresponding port bit to output mode
 ! 
 
-TUPLE: port < model ddr ;
+TUPLE: port < model ddr latch ;
 
+! new port is dependant on ddr port
 : <port> ( value -- port )
-    port new-model 0 <ddr> >>ddr dup ddr>> swap [ add-connection ] keep
-    ;
+    port new-model ;
+ 
 
 ! Depending DDR we ether read from out side world or latch output
 : port-read ( port -- d )
@@ -26,5 +27,11 @@ TUPLE: port < model ddr ;
 
 ! Write to port
 : port-write ( d port -- )
+    drop
+    drop ;
+
+M: port model-changed ( model observer -- )
+    drop
+    drop ;
     
-    
+

@@ -1,7 +1,7 @@
 ! Copyright (C) 2011 Joseph Moschini.
 ! See http://factorcode.org/license.txt for BSD license.
 !
-USING: kernel models ;
+USING: accessors kernel models ;
 
 
 IN: 6805.emulator.ddr

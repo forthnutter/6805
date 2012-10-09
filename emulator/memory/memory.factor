@@ -1,7 +1,8 @@
 ! Copyright (C) 2011 Joseph Moschini.
 ! See http://factorcode.org/license.txt for BSD license.
 !
-USING: accessors kernel models sequences vectors ;
+USING: accessors kernel math models sequences vectors
+       6805.emulator.ports ;
 
 
 IN: 6805.emulator.memory
@@ -47,10 +48,6 @@ GENERIC: PORTC ( memory -- )
 GENERIC: PORTD ( memory -- )
 
 
-M: memory PORTA
-    drop
-;
-
 M: memory PORTB
     drop
 ;
@@ -67,16 +64,32 @@ M: memory PORTD
 : <memory> ( n value -- memory )
     memory new-model swap >>n ;
 
-: add-memory ( object memory -- memory )
+: memory-add ( object memory -- memory )
    [ add-connection ] keep 
 ;
 
-: mem-setup ( -- vector )
+: memory-setup ( -- vector )
    16  <vector> dup
-    0 0 <memory> \ PORTA swap add-memory swap push dup ! Port A
-    1 0 <memory> \ PORTB swap add-memory swap push dup ! Port B
-    2 0 <memory> \ PORTC swap add-memory swap push dup ! Port C
-    3 0 <memory> \ PORTD swap add-memory swap push dup ! Port D
+    0 0 <memory> \ PORTA swap memory-add swap push dup ! Port A
+    1 0 <memory> \ PORTB swap memory-add swap push dup ! Port B
+    2 0 <memory> \ PORTC swap memory-add swap push dup ! Port C
+    3 0 <memory> \ PORTD swap memory-add swap push dup ! Port D
     drop
     
+    ;
+
+
+
+! read memory
+: memory-read ( address vector -- data )
+    dup dup vector? swap length zero? not and
+    [
+        nth
+        dup
+        memory?
+        [
+            value>>
+        ] when
+    ] when
+
     ;
