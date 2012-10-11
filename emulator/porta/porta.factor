@@ -9,8 +9,8 @@ IN: 6805.emulator.porta
 
 TUPLE: porta < model latch ddr ;
 
-: <porta> ( pvalue dvalue -- porta )
-     <ddr> swap <port> porta new-model swap >>latch swap >>ddr ;
+: <porta> ( value pvalue dvalue -- porta )
+     <ddr> swap <port> rot porta new-model swap >>latch swap >>ddr ;
 
 : porta-read ( porta -- data )
-    value>> ;
+     [ latch>> ] keep swap [ ddr>> ] keep value>> ;
