@@ -15,8 +15,8 @@ IN: 6805.emulator.ports
 TUPLE: port < model ddr latch ;
 
 ! new port is dependant on ddr port
-: <port> ( value -- port )
-    port new-model ;
+: <port> ( ddr value -- port )
+    port new-model swap ;
  
 
 ! Depending DDR we ether read from out side world or latch output
