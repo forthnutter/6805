@@ -12,23 +12,21 @@ IN: 6805.emulator.ports
 !         corresponding port bit to output mode
 ! 
 
-TUPLE: port < model ddr latch ;
+TUPLE: port < model ddr ;
 
 ! new port is dependant on ddr port
 : <port> ( ddr value -- port )
-    port new-model swap ;
+    port new-model swap >>ddr dup [ dup ddr>> add-connection ] dip ;
  
 
 ! Depending DDR we ether read from out side world or latch output
 : port-read ( port -- d )
-    dup [ ddr>> value>> ] [ latch>> ] bi bitand
-    swap dup [ ddr>> value>> bitnot ] [ value>> ] bi bitand
-    swap drop bitand ;
+    value>> 0xff bitand ;
 
 ! Write to port
 : port-write ( d port -- )
-    drop
-    drop ;
+    [ dup ddr>> value>> ] [ value>> ] bi bitand swap rot swap
+    dup [ ddr>> value>> bitand ] dip -rot bitor swap set-model ;
 
 M: port model-changed ( model observer -- )
     drop
