@@ -77,6 +77,13 @@ M: cpu addmemory ( obj cpu -- )
 SYMBOL: tlist
 
 
+
+: read-instruction (cpu -- word )
+  [ pc>> ] keep   ! pc cpu
+  [ over 1 + swap pc<< ] keep
+  read-byte ;
+
+
 : find-memory ( address list -- m t f )
   [
     [
