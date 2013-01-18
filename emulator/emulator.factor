@@ -78,7 +78,7 @@ SYMBOL: tlist
 
 
 
-: read-instruction (cpu -- word )
+: read-instruction ( cpu -- word )
   [ pc>> ] keep   ! pc cpu
   [ over 1 + swap pc<< ] keep
   read-byte ;
