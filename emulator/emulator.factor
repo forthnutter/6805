@@ -9,7 +9,8 @@ USING:
     math.parser unicode.case namespaces parser lexer
     tools.continuations peg fry assocs combinators sequences.deep make
     vectors
-    words quotations deques dlists ;
+    words quotations deques dlists
+    6805.emulator.memory ;
   
 !    io.encodings.binary
 !    io.files
@@ -54,8 +55,7 @@ GENERIC: addmemory ( obj cpu -- )
 GENERIC: byte-read ( address cpu -- byte )
 
 
-#! Make a CPU here
-: <cpu> ( -- cpu ) cpu new <dlist> >>mlist dup reset ;
+
 
 #! do a cpu Reset
 M: cpu reset ( cpu -- )
@@ -394,3 +394,19 @@ SYNTAX: opcode ( -- )
 #! Description: Trace execute one instruction
 : trace ( cpu -- )
 ;
+
+! Get PC and Read memory data
+: pc-memory-read ( cpu -- d )
+  [ pc>> ] keep [ memory>> ] keep
+  memory-read ;
+
+
+! Branch if Bit 0 is Set
+: (opcode-00) ( cpu -- )
+  [ pc-memory-read ] keep 
+  ;
+
+#! Make a CPU here
+: <cpu> ( -- cpu )
+  cpu new
+  <memory> >>memory ;
