@@ -10,13 +10,13 @@ USING:
     tools.continuations peg fry assocs combinators sequences.deep make
     vectors
     words quotations deques dlists
-    freescale.6805.emulator
-    freescale.6805.emulator.memory
-    freescale.6805.emulator.alu
-    freescale.6805.emulator.config ;
+    6805.emulator
+    6805.emulator.memory
+    6805.emulator.alu
+    6805.emulator.config ;
 
 
-IN: frescale.6805.emulator.test
+IN: 6805.emulator.test
 
 
 : 6805-emu-test ( -- cpu )
