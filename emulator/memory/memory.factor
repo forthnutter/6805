@@ -2,10 +2,10 @@
 ! See http://factorcode.org/license.txt for BSD license.
 !
 USING: accessors kernel math models sequences vectors
-       freescale.6805.emulator.port arrays ;
+       6805.emulator.port arrays ;
 
 
-IN: freescale.6805.emulator.memory
+IN: 6805.emulator.memory
 
 TUPLE: io-cell < model start size ;
 

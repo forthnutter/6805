@@ -11,11 +11,11 @@ USING:
     tools.continuations peg fry assocs combinators sequences.deep make
     vectors
     words quotations deques dlists
-    freescale.6805.emulator.memory
-    freescale.6805.emulator.alu ;
+    6805.emulator.memory
+    6805.emulator.alu ;
   
 
-IN: freescale.6805.emulator.config
+IN: 6805.emulator.config
 
 TUPLE: config iostart iosize
     ramstart ramsize

@@ -10,10 +10,10 @@ USING:
     namespaces parser lexer
     tools.continuations peg fry assocs combinators sequences.deep make
     vectors words quotations deques dlists models
-    freescale.6805.emulator.memory ;
+    6805.emulator.memory ;
 
 
-IN: freescale.6805.emulator.alu
+IN: 6805.emulator.alu
 
 
 ! 7  6  5  4  3  2  1  0

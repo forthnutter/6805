@@ -5,7 +5,7 @@ USING: accessors kernel models math ;
       
  
 
-IN: freescale.6805.emulator.port
+IN: 6805.emulator.port
 
 
 
