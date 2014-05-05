@@ -1,8 +1,8 @@
 ! Copyright (C) 2011 Joseph L Moschini.
 ! See http://factorcode.org/license.txt for BSD license.
 !
-USING: freescale.6805.emulator tools.time ;
-IN: freescale.6805
+USING: 6805.emulator tools.time ;
+IN: 6805
 
 
 INSTRUCTION: BRSET 0,dd,rr        ; opcode 00 cycles 05

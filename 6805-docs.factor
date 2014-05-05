@@ -1,7 +1,7 @@
 ! Copyright (C) 2011 Joseph Moschini.
 ! See http://factorcode.org/license.txt for BSD license.
-USING: help.markup help.syntax sequences strings freescale.6805.emulator ;
-IN: freescale.6805
+USING: help.markup help.syntax sequences strings 6805.emulator ;
+IN: 6805
 
 
 ARTICLE: { "cpu-6805" "cpu-6805" } "Freescale 6805 CPU Emulator"
