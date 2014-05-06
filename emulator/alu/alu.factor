@@ -77,6 +77,12 @@ TUPLE: alu < model ;
 
 #! clear flag C
 : alu-clr-c ( alu -- )
-    [ alu-read C-FLAG clr-bit ] keep alu-write ;
+    [ alu-read C-FLAG clear-bit ] keep alu-write ;
+
+#! move bit into Carry flag
+: >alu-c ( b alu -- )
+    [ 0 = ] dip swap
+    [ alu-clr-c ] [ alu-set-c ] if ;
+
 
 
