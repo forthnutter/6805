@@ -10,14 +10,14 @@ USING:
     tools.continuations peg fry assocs combinators sequences.deep make
     vectors
     words quotations
-    freescale.6805.emulator.memory
-    freescale.6805.emulator.alu
-    freescale.6805.emulator.config ;
+    6805.emulator.memory
+    6805.emulator.alu
+    6805.emulator.config ;
   
 
-IN: freescale.6805.emulator
+IN: 6805.emulator
 
-TUPLE: cpu config alu a x ccr pc sp halted? last-interrupt cycles mlist memory ;
+TUPLE: cpu config alu a x pc sp halted? last-interrupt cycles mlist memory ;
 
 
 
@@ -58,7 +58,7 @@ TUPLE: cpu config alu a x ccr pc sp halted? last-interrupt cycles mlist memory ;
 
 ! move bit or flag into carry flag
 : >C ( ? cpu -- )
-  ccr>> >ccr-c ;
+  alu>> >alu-c ;
   
 : not-implemented ( <cpu> -- )
   drop
@@ -83,7 +83,7 @@ TUPLE: cpu config alu a x ccr pc sp halted? last-interrupt cycles mlist memory ;
    [ PC+ ] keep
    [ pc-memory-read ] keep
    [ 0 bit? ] dip [ >C ] keep
-   [ ccr>> ccr-c? ] keep swap
+   [ alu>> alu-c? ] keep swap
    [
      [ PC+ ] keep
      [ pc-memory-read ] keep
@@ -138,5 +138,5 @@ TUPLE: cpu config alu a x ccr pc sp halted? last-interrupt cycles mlist memory ;
 : <cpu> ( -- cpu )
   cpu new
   0 >>pc
-  0xe0 <ccr> >>ccr ;
+  0xe0 <alu> >>alu ;
 
